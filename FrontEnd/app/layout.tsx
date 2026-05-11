@@ -27,21 +27,7 @@ export const metadata: Metadata = {
   description: 'Roupas exclusivas inspiradas no estilo UK Drill. Streetwear premium para quem vive a cultura.',
   generator: 'v0.app',
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/icon-light-32x32.png',
   },
 }
 
