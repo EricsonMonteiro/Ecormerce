@@ -1,0 +1,58 @@
+Implementação de Stripe no FrontEnd
+
+1) Configuração de ambiente
+- Crie o arquivo `FrontEnd/.env.local`.
+- Adicione:
+  STRIPE_SECRET_KEY=sk_test_...
+  NEXT_PUBLIC_STRIPE_PUBLIC_KEY=pk_test_...
+  STRIPE_WEBHOOK_SECRET=whsec_test_...
+- Certifique-se de que `.env.local` está no `.gitignore`.
+
+2) Checkout Stripe
+- Arquivo: `FrontEnd/app/api/checkout/route.ts`
+- Fez a inicialização do Stripe com `process.env.STRIPE_SECRET_KEY`.
+- Implementou a rota POST para criar uma sessaõo Checkout.
+- O corpo da request deve conter `items` do carrinho.
+- O backend cria `line_items` usando:
+  * `price` quando `stripePriceIds[item.id]` é valido
+  * `price_data` como fallback
+- Retorna `sessionId` e `url` para redirecionar o navegador.
+
+3) Webhook Stripe
+- Arquivo: `FrontEnd/app/api/webhooks/stripe/route.ts`
+- Leitura do corpo cru com `request.text()`.
+- Validação de assinatura usando `stripe.webhooks.constructEvent(body, signature, webhookSecret)`.
+- Eventos tratados:
+  * `checkout.session.completed`
+  * `payment_intent.created`
+  * `payment_intent.succeeded`
+  * `payment_intent.payment_failed`
+  * `charge.succeeded`
+  * `charge.updated`
+  * `charge.refunded`
+  * `product.created`
+  * `price.created`
+- Garantir `STRIPE_WEBHOOK_SECRET` correto do Stripe CLI.
+
+4) Arquivo de apoio
+- `FrontEnd/app/api/webhooks/stripe/handlers.example.ts`
+  * Exemplo de padrão de persistência de pedido.
+  * Modelos comentados para Firebase, PostgreSQL/Prisma, MongoDB, Supabase.
+  * Exemplo de envio de email de confirmação.
+
+5) Testes locais com Stripe CLI
+- Instalar Stripe CLI localmente.
+- Autenticar com `stripe login`.
+- Iniciar escuta: `stripe listen --forward-to http://localhost:3000/api/webhooks/stripe`.
+- Simular evento: `stripe trigger checkout.session.completed`.
+
+6) Observações de integração
+- O frontend redireciona ao Stripe Checkout com `window.location.href = data.url`.
+- Webhook deve responder `200` para eventos válidos.
+- Se o `STRIPE_WEBHOOK_SECRET` estiver errado, o webhook retorna `400`.
+- Se houver única definição de handler duplicada, corrija o arquivo `route.ts`.
+
+7) Prósximos passos
+- Adicionar persistência de pedidos em banco de dados.
+- Implementar confirmação de email na recepção de `checkout.session.completed`.
+- Limitar o tratamento de eventos para apenas os necessários.
