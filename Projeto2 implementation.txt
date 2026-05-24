@@ -1,0 +1,81 @@
+====================================================================
+           GUIA DE EXECUÇÃO: PROJETO 2 - ARQUITETURA DISTRIBUÍDA
+====================================================================
+Aqui está um resumo direto e conciso do texto:
+
+O **Docker** foi utilizado para unificar e isolar a arquitetura distribuída,
+ permitindo a execução simultânea e padronizada de todos os componentes do 
+ sistema: o mensageiro (**RabbitMQ**), o proxy reverso (**Nginx**), 
+ o banco de dados (**Postgres**) e os microsserviços em **Python**.
+
+Este documento descreve o passo a passo para executar e demonstrar 
+a arquitetura de microsserviços (Webhook, RabbitMQ e Worker em Python) 
+funcionando em conjunto com o FrontEnd em Next.js.
+
+--------------------------------------------------------------------
+PASSO 1: INICIAR O DOCKER DESKTOP (Pré-requisito)
+
+PASSO 2: SUBIR A INFRAESTRUTURA DE MICROSSERVIÇOS (BACKEND)
+--------------------------------------------------------------------
+1. Abra um terminal na pasta raiz do projeto:
+   C:\Users\User\Documents\UTA\SiD\Ecomerce\
+
+2. Execute o comando para construir e subir os containers em segundo plano:
+   docker-compose up -d --build
+
+(Isso iniciará o RabbitMQ, Nginx na porta 8080, Webhook FastAPI, o Worker Python, a Orders API e o banco PostgreSQL).
+
+--------------------------------------------------------------------
+PASSO 3: REDIRECIONAR EVENTOS DO STRIPE PARA O NGINX (8080)
+--------------------------------------------------------------------
+1. Abra um NOVO terminal.
+2. Execute o escutador do Stripe apontando para a porta do nosso Nginx (8080):
+   stripe listen --forward-to localhost:8080/api/webhooks/stripe
+
+(Deixe esse terminal aberto para ver os eventos do Stripe chegando).
+
+--------------------------------------------------------------------
+PASSO 4: INICIAR O FRONTEND (NEXT.JS)
+--------------------------------------------------------------------
+1. Abra um TERCEIRO terminal.
+2. Navegue até a pasta do FrontEnd:
+   cd C:\Users\User\Documents\UTA\SiD\Ecomerce\FrontEnd
+3. Inicie o servidor Next.js:
+   npm run dev
+
+--------------------------------------------------------------------
+PASSO 5: DEMONSTRANDO A COMPRA NO SITE
+--------------------------------------------------------------------
+1. Abra o navegador e acesse o site: http://localhost:3000
+2. Adicione um produto ao carrinho e avance para o Checkout.
+3. Na página de pagamento do Stripe, preencha com o cartão de teste:
+   - Número do Cartão: 4242 4242 4242 4242
+   - Validade: Qualquer data futura (ex: 12/26)
+   - CVC: Qualquer número (ex: 123)
+4. Clique em "Pagar".
+
+--------------------------------------------------------------------
+PASSO 6: MOSTRANDO OS RESULTADOS PARA O PROFESSOR
+--------------------------------------------------------------------
+Para provar que a arquitetura assíncrona (com RabbitMQ e Worker) funcionou, 
+mostre os seguintes pontos:
+
+1. O Terminal do Stripe CLI (Passo 3):
+   Mostrará o evento "checkout.session.completed" com código [200], provando 
+   que o Nginx/Webhook recebeu a notificação com sucesso.
+
+2. O Log do Worker (Consumidor do RabbitMQ):
+   Em qualquer terminal na pasta raiz (Ecomerce), rode:
+   docker-compose logs worker
+   
+   A saída mostrará o trabalhador pegando o item da fila:
+   "Evento recebido do RabbitMQ: checkout.session.completed"
+   "Pedido processado com sucesso na Orders API"
+
+3. O Painel do RabbitMQ (Bônus):
+   Acesse no navegador: http://localhost:15672
+   Login: guest | Senha: guest
+   Vá na aba "Queues" e mostre a fila "stripe_events" criada e rodando.
+
+====================================================================
+Parabéns! Isso conclui o fluxo distribuído e assíncrono do Projeto 2.
