@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # 1. Message Broker (Fila)
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   # Porta para comunicação AMQP
+      - "15672:15672" # Painel de controle Web (http://localhost:15672)
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. Webhook API (FastAPI)
+  webhook_api:
+    build: 
+      context: ./backend/webhook
+    container_name: webhook_api
+    ports:
+      - "8001:8000"
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  # 3. Worker (Consumidor da Fila)
+  worker:
+    build: 
+      context: ./backend/worker
+    container_name: python_worker
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - ORDERS_API_URL=http://orders_api:8000
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  # 4. Orders API (API de Pedidos)
+  orders_api:
+    build: 
+      context: ./backend/orders_api
+    container_name: orders_api
+    ports:
+      - "8002:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/ecommerce
+    depends_on:
+      - db
+
+  # 5. Banco de Dados para a Tabela Orders
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ecommerce
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 6. Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_proxy
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - webhook_api
+
+  # 7. Ngrok Tunnel (Opcional via Docker, pode ser rodado localmente também)
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok_tunnel
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    command:
+      - "http"
+      - "nginx:80"
+    ports:
+      - "4040:4040"
+    depends_on:
+      - nginx
+
+volumes:
+  postgres_data:
