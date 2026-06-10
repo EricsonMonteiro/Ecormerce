@@ -21,10 +21,13 @@ def process_event(ch, method, properties, body):
         session = event.get('data', {}).get('object', {})
         metadata = session.get('metadata', {})
 
+        payment_status = session.get('payment_status', 'paid')
+        order_status = "PAID" if payment_status == "paid" else "pending"
+
         order_data = {
             "customer_id": session.get('customer') or metadata.get('customer_id', 'unknown'),
             "stripe_event_id": stripe_event_id,
-            "status": "pending",
+            "status": order_status,
             "total_amount": session.get('amount_total', 0) / 100.0
         }
 
