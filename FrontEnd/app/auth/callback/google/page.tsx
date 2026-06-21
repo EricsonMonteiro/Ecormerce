@@ -20,7 +20,7 @@ export default function GoogleCallbackPage() {
       }
 
       try {
-        const response = await fetch("/api/auth/google", {
+        const response = await fetch("http://localhost:8000/auth/google", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
