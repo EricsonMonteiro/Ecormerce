@@ -17,7 +17,19 @@ services:
       timeout: 5s
       retries: 5
 
-  # 2. Webhook API (FastAPI)
+  # 2. Auth API (FastAPI)
+  auth_api:
+    build: 
+      context: ./backend/auth_api
+    container_name: auth_api
+    ports:
+      - "8000:8000"
+    environment:
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+
+  # 3. Webhook API (FastAPI)
   webhook_api:
     build: 
       context: ./backend/webhook
