@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
               images: [item.image].filter((img) => img.startsWith("http")),
             },
             unit_amount: Math.round(item.price * 100), // Stripe uses cents
+            recurring: { interval: "month" }, // fallback também recorrente
           },
           quantity: item.quantity,
         }
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,
-      mode: "payment",
+      mode: "subscription", // precos no Stripe sao recorrentes (Por mes)
       success_url: `${request.headers.get("origin")}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${request.headers.get("origin")}/cart`,
       metadata: {
