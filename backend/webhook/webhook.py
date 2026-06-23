@@ -34,6 +34,7 @@ async def stripe_webhook(request: Request):
         else:
             event = json.loads(payload)
     except Exception as e:
+        print(f"Erro na assinatura do Stripe: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
 
     try:
@@ -42,7 +43,7 @@ async def stripe_webhook(request: Request):
         channel.basic_publish(
             exchange='',
             routing_key='stripe_events',
-            body=json.dumps(event),
+            body=payload, # payload já é bytes (o JSON original do Stripe)
             properties=pika.BasicProperties(
                 delivery_mode=2, # Mensagem persistente
             )

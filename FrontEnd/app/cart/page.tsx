@@ -3,12 +3,14 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { useCart } from "@/context/cart-context"
+import { useAuth } from "@/context/auth-context"
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, totalPrice, clearCart } = useCart()
+  const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
 
   const formatPrice = (price: number) => {
@@ -26,7 +28,10 @@ export default function CartPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({ 
+          items,
+          customer_id: user?.id || "unknown" 
+        }),
       })
 
       const data = await response.json()

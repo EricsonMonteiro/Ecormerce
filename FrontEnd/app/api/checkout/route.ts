@@ -18,7 +18,7 @@ interface CartItem {
 
 export async function POST(request: NextRequest) {
   try {
-    const { items } = (await request.json()) as { items: CartItem[] }
+    const { items, customer_id } = (await request.json()) as { items: CartItem[], customer_id?: string }
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
       cancel_url: `${request.headers.get("origin")}/cart`,
       metadata: {
         order_id: `order_${Date.now()}`,
+        customer_id: customer_id || "unknown",
       },
     })
 

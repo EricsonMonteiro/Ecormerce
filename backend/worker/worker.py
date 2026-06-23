@@ -23,6 +23,8 @@ def process_event(ch, method, properties, body):
 
         payment_status = session.get('payment_status', 'paid')
         order_status = "PAID" if payment_status == "paid" else "pending"
+    
+        print(f"[Worker] checkout.session.completed payload - payment_status: {payment_status}, evaluated order_status: {order_status}")
 
         order_data = {
             "customer_id": session.get('customer') or metadata.get('customer_id', 'unknown'),
