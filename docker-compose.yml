@@ -67,6 +67,18 @@ services:
     depends_on:
       - db
 
+  # 4.5. Products API
+  products_api:
+    build: 
+      context: ./backend/products_api
+    container_name: products_api
+    ports:
+      - "8003:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/ecommerce
+    depends_on:
+      - db
+
   # 5. Banco de Dados para a Tabela Orders
   db:
     image: postgres:15-alpine

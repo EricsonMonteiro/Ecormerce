@@ -34,8 +34,8 @@ export const products: Product[] = [
 // Stripe Price IDs - configure no seu Stripe Dashboard
 // Se não quiser usar IDs fixos, deixe como placeholder e o checkout criará os preços dinamicamente.
 export const stripePriceIds: Record<string, string> = {
-  "drill-hoodie-01": "price_XXXXXXXX",
-  "drill-cargo-01": "price_XXXXXXXX",
-  "drill-tee-01": "price_XXXXXXXX",
-  "drill-puffer-01": "price_XXXXXXXX",
+  "drill-hoodie-01": "price_1TVtDIGX2Wh3OjU9Wtu7tm6Y",
+  "drill-cargo-01":  "price_1TVtEpGX2Wh3OjU9ks6Wrir4",
+  "drill-tee-01":    "price_1TVtBPGX2Wh3OjU9gMulVMpr",
+  "drill-puffer-01": "price_1TVtGGGX2Wh3OjU9GwbBWPop",
 }
